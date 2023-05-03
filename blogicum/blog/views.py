@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from django.shortcuts import get_object_or_404, render
 from blog.models import Category, Post
+from django.shortcuts import get_object_or_404, render
 
 
 def index(request):
@@ -10,6 +10,9 @@ def index(request):
         is_published=True,
         category__is_published=True,
         pub_date__lt=datetime.now(),
+        ).select_related(
+        'category',
+        'author',
         )[:5]
     context = {'post_list': post_list}
     return render(request, template, context)
@@ -38,10 +41,13 @@ def category_posts(request, category_slug):
         )
     )
     post_list = Post.objects.filter(
-        category__slug=category_slug,
+        category=category,
         is_published=True,
         category__is_published=True,
         pub_date__lt=datetime.now(),
-    ).select_related('category')
+    ).select_related(
+        'category',
+        'author',
+        )
     context = {'post_list': post_list, 'category': category}
     return render(request, template, context)
